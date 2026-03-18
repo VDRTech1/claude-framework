@@ -1,41 +1,41 @@
 #!/bin/bash
 # Claude Framework Status Bar
-# Shows: context %, hook health, project name, Star Wars quote
+# Shows: git branch/status, hook health, Star Wars quote (colored)
+
+# --- Colors ---
+GREEN="\033[32m"
+YELLOW="\033[33m"
+RED="\033[31m"
+CYAN="\033[36m"
+DIM="\033[2m"
+RESET="\033[0m"
 
 # --- Git status ---
 BRANCH=$(git branch --show-current 2>/dev/null || echo "??")
 DIRTY=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 if [ "$DIRTY" -gt 0 ] 2>/dev/null; then
-    GIT_DISPLAY="${BRANCH}:${DIRTY}M"
+    GIT_DISPLAY="${YELLOW}${BRANCH}:${DIRTY}M${RESET}"
 else
-    GIT_DISPLAY="${BRANCH}:clean"
+    GIT_DISPLAY="${GREEN}${BRANCH}:clean${RESET}"
 fi
 
 # --- Hook health ---
 HOOKS_OK=true
-HOOK_COUNT=0
 
 for hook in "$HOME/.claude/hooks/context-guard.sh" "$HOME/.claude/hooks/precompact-save.sh"; do
-    if [ -f "$hook" ] && [ -x "$hook" ]; then
-        HOOK_COUNT=$((HOOK_COUNT + 1))
-    else
+    if [ ! -f "$hook" ] || [ ! -x "$hook" ]; then
         HOOKS_OK=false
     fi
 done
 
-# Check settings.json has hooks registered
 if [ -f "$HOME/.claude/settings.json" ]; then
-    if grep -q '"hooks"' "$HOME/.claude/settings.json" 2>/dev/null; then
-        HOOK_COUNT=$((HOOK_COUNT + 1))
-    else
-        HOOKS_OK=false
-    fi
+    grep -q '"hooks"' "$HOME/.claude/settings.json" 2>/dev/null || HOOKS_OK=false
 fi
 
 if [ "$HOOKS_OK" = true ]; then
-    HOOK_DISPLAY="HOOKS:OK"
+    HOOK_DISPLAY="${GREEN}HOOKS:OK${RESET}"
 else
-    HOOK_DISPLAY="HOOKS:ERR"
+    HOOK_DISPLAY="${RED}HOOKS:ERR${RESET}"
 fi
 
 # --- Star Wars quotes ---
@@ -62,10 +62,9 @@ QUOTES=(
     "May the Force be with you."
 )
 
-# Pick quote based on minute of the hour (changes every 3 min)
 MINUTE=$(date +%M)
 IDX=$(( (MINUTE / 3) % ${#QUOTES[@]} ))
-QUOTE="${QUOTES[$IDX]}"
+QUOTE="${DIM}${QUOTES[$IDX]}${RESET}"
 
 # --- Output ---
-echo "${GIT_DISPLAY} | ${HOOK_DISPLAY} | ${QUOTE}"
+echo -e "${GIT_DISPLAY} ${DIM}|${RESET} ${HOOK_DISPLAY} ${DIM}|${RESET} ${QUOTE}"
