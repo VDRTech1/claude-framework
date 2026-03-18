@@ -83,7 +83,12 @@ copy_file "hooks/precompact-save.sh" "$HOOKS_DIR/precompact-save.sh"
 chmod +x "$HOOKS_DIR/precompact-save.sh"
 echo "  precompact-save hook installed"
 
-# --- Register hooks in settings.json ---
+# --- Status bar ---
+copy_file "statusbar/status.sh" "$HOOKS_DIR/status.sh"
+chmod +x "$HOOKS_DIR/status.sh"
+echo "  status bar installed"
+
+# --- Register hooks + status bar in settings.json ---
 SETTINGS_FILE="$HOME/.claude/settings.json"
 
 # Create settings.json if it doesn't exist
@@ -124,6 +129,10 @@ hooks['Stop'] = hooks.get('Stop', []) + [{
 }]
 
 settings['hooks'] = hooks
+settings['statusLine'] = {
+    'type': 'command',
+    'command': 'bash \$HOME/.claude/hooks/status.sh'
+}
 
 with open(settings_file, 'w') as f:
     json.dump(settings, f, indent=2)
@@ -144,6 +153,9 @@ echo ""
 echo "Hooks installed (~/.claude/hooks/):"
 echo "  precompact-save  — Warns before auto-compact wipes context"
 echo "  context-guard    — Blocks stop when context >= 80%, prompts /compact"
+echo ""
+echo "Status bar:"
+echo "  Shows: project name | context % | hook health | Star Wars quote"
 echo ""
 echo "Project files:"
 echo "  RULES.md      — Development rules (updated)"
