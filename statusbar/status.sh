@@ -45,8 +45,9 @@ else
     fi
 fi
 
-# --- Star Wars quotes ---
+# --- Quotes ---
 QUOTES=(
+    # Star Wars
     "Do. Or do not. There is no try."
     "The Force is strong with this one."
     "I find your lack of faith disturbing."
@@ -67,6 +68,27 @@ QUOTES=(
     "We are what they grow beyond."
     "Rebellions are built on hope."
     "May the Force be with you."
+    # South Park
+    "Respect my authoritah!"
+    "Oh my God, they killed Kenny!"
+    "Screw you guys, I'm going home."
+    "I'm not fat, I'm big-boned."
+    "You're gonna have a bad time."
+    "Drugs are bad, mmkay."
+    "I learned something today."
+    "How would you like to suck my balls, Mr. Garrison?"
+    "Blame Canada!"
+    "Whateva! I do what I want!"
+    "That's like, super cool."
+    "Timmy!"
+    "They took our jobs!"
+    "You bastards!"
+    "I'm super serial."
+    "Butters, you're grounded!"
+    "Put it down! It's super bad!"
+    "Tree fiddy."
+    "Kick the baby!"
+    "Aaand it's gone."
 )
 
 MINUTE=$(date +%M)
