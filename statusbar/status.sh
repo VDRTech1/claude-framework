@@ -2,9 +2,6 @@
 # Claude Framework Status Bar
 # Shows: context %, hook health, project name, Star Wars quote
 
-# --- Project name ---
-PROJECT=$(basename "$(pwd)")
-
 # --- Git status ---
 BRANCH=$(git branch --show-current 2>/dev/null || echo "??")
 DIRTY=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
@@ -71,4 +68,4 @@ IDX=$(( (MINUTE / 3) % ${#QUOTES[@]} ))
 QUOTE="${QUOTES[$IDX]}"
 
 # --- Output ---
-echo "${PROJECT} | ${GIT_DISPLAY} | ${HOOK_DISPLAY} | ${QUOTE}"
+echo "${GIT_DISPLAY} | ${HOOK_DISPLAY} | ${QUOTE}"
