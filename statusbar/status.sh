@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Framework Status Bar
-# Shows: git branch/status, Star Wars quote (colored)
+# Shows: git branch/status (single or multi-repo), Star Wars quote (colored)
 
 # --- Colors ---
 GREEN="\033[32m"
@@ -8,13 +8,41 @@ YELLOW="\033[33m"
 DIM="\033[2m"
 RESET="\033[0m"
 
+# --- Git status helper ---
+repo_status() {
+    local dir="$1"
+    local name="$2"
+    local dirty=$(git -C "$dir" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$dirty" -gt 0 ] 2>/dev/null; then
+        echo -n "${YELLOW}${name}:${dirty}M${RESET}"
+    else
+        echo -n "${GREEN}${name}:ok${RESET}"
+    fi
+}
+
 # --- Git status ---
-BRANCH=$(git branch --show-current 2>/dev/null || echo "??")
-DIRTY=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-if [ "$DIRTY" -gt 0 ] 2>/dev/null; then
-    GIT_DISPLAY="${YELLOW}${BRANCH}:${DIRTY}M${RESET}"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    # Single-repo project
+    BRANCH=$(git branch --show-current 2>/dev/null || echo "??")
+    DIRTY=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$DIRTY" -gt 0 ] 2>/dev/null; then
+        GIT_DISPLAY="${YELLOW}${BRANCH}:${DIRTY}M${RESET}"
+    else
+        GIT_DISPLAY="${GREEN}${BRANCH}:ok${RESET}"
+    fi
 else
-    GIT_DISPLAY="${GREEN}${BRANCH}:clean${RESET}"
+    # Multi-repo project — scan subdirectories for .git folders
+    GIT_PARTS=()
+    for dir in */; do
+        if [ -d "${dir}.git" ]; then
+            GIT_PARTS+=("$(repo_status "$dir" "${dir%/}")")
+        fi
+    done
+    if [ ${#GIT_PARTS[@]} -gt 0 ]; then
+        GIT_DISPLAY=$(IFS=' '; echo "${GIT_PARTS[*]}")
+    else
+        GIT_DISPLAY="${DIM}no git${RESET}"
+    fi
 fi
 
 # --- Star Wars quotes ---
