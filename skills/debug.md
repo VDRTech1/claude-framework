@@ -48,8 +48,27 @@ Work through these steps IN ORDER. Do not skip ahead. Each step narrows the prob
   timeout 5 bash -c 'echo > /dev/tcp/localhost/5432' && echo OK || echo FAIL
   ```
 
-## 5. ROOT CAUSE
-- Now that you've narrowed it down, read the actual code at the failure point
+## 5. ROOT CAUSE — 5 Whys
+
+Apply the **5 Whys** method. Start with the symptom and ask "Why?" until you reach the true root cause. Do not stop at the surface-level explanation.
+
+**Example:**
+1. **Why** did the API return 500? → The database query failed
+2. **Why** did the query fail? → Connection was refused
+3. **Why** was connection refused? → The DB service was down
+4. **Why** was the service down? → It ran out of disk space
+5. **Why** did it run out of disk? → Logs were never rotated ← **root cause**
+
+Document your chain:
+```
+Why 1: [symptom] → [because...]
+Why 2: [that happened] → [because...]
+Why 3: [that happened] → [because...]
+Why 4: [that happened] → [because...]
+Why 5: [that happened] → [ROOT CAUSE]
+```
+
+Then verify by reading the actual code at the failure point:
 - Trace the data flow: what goes in, what comes out, where does it diverge?
 - Check for common causes:
   - Null/undefined where object expected
@@ -79,7 +98,14 @@ After debugging, summarize:
 ## Debug Report
 
 **Issue:** [one-line description]
-**Root Cause:** [what actually went wrong]
+
+**5 Whys:**
+1. Why? →
+2. Why? →
+3. Why? →
+4. Why? →
+5. Why? → **ROOT CAUSE**
+
 **Fix:** [what was changed, with file:line references]
 **Verified:** [how you confirmed it's fixed]
 **Regression Test:** [added / not applicable]
