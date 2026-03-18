@@ -1,6 +1,6 @@
 # Claude Framework
 
-A lean, opinionated setup for Claude Code projects. Provides session continuity, development rules, code review, debugging, and pre-production quality gates.
+A lean setup for Claude Code projects. Session continuity, development rules, code review, debugging, and pre-production quality gates.
 
 ## What's Included
 
@@ -8,16 +8,12 @@ A lean, opinionated setup for Claude Code projects. Provides session continuity,
 |------|---------|
 | `RULES.md` | Mandatory development & session guidelines |
 | `CLAUDE.md.template` | Project context template (customise per project) |
-| **Skills** | |
 | `skills/handover.md` | `/handover` — Session handover with checkpoint, versioning, db export |
 | `skills/resume.md` | `/resume` — Resume from latest checkpoint |
-| `skills/compact.md` | `/compact` — Emergency context save before auto-compact |
 | `skills/review.md` | `/review` — Structured code review |
-| `skills/debug.md` | `/debug` — Structured debugging workflow |
+| `skills/debug.md` | `/debug` — Structured debugging workflow (5 Whys) |
 | `skills/preprod.md` | `/preprod` — Pre-production readiness (SDLC + OWASP Top 10) |
-| **Hooks** | |
-| `hooks/precompact-save.sh` | Warns before auto-compact wipes context |
-| `hooks/context-guard.sh` | Blocks stop when context >= 80%, prompts `/compact` |
+| `statusbar/status.sh` | Status bar — git branch/status + Star Wars quote |
 | `install.sh` | One-command installer |
 
 ## Install
@@ -44,8 +40,8 @@ The installer:
 2. **Creates `CLAUDE.md`** from template if it doesn't exist (won't overwrite)
 3. **Creates `CHANGELOG.md`** if it doesn't exist
 4. **Creates directories**: `docs/checkpoints/`, `scripts/`
-5. **Installs 6 skills** to `~/.claude/commands/` (global, works in all projects)
-6. **Installs 2 hooks** to `~/.claude/hooks/` and registers them in `settings.json`
+5. **Installs 5 skills** to `~/.claude/commands/` (global, works in all projects)
+6. **Installs status bar** to `~/.claude/hooks/` and registers in `settings.json`
 
 ## Skills
 
@@ -55,14 +51,11 @@ Run before ending any session. Bumps app version, exports database, updates CLAU
 ### `/resume`
 Start a new session. Reads the latest checkpoint and summarises where you left off.
 
-### `/compact`
-Emergency context save. Creates a quick checkpoint when context is getting full. Triggered automatically by the `context-guard` hook, or run manually.
-
 ### `/review`
 Structured code review on session changes. Checks: correctness, error handling, security, code quality, dead code, tests. Outputs pass/warn/fail per category.
 
 ### `/debug`
-Structured debugging workflow: reproduce → locate → recent changes → isolate → root cause → fix → verify. Prevents random guessing.
+Structured debugging workflow with **5 Whys** root cause analysis: reproduce → locate → recent changes → isolate → 5 Whys → fix → verify.
 
 ### `/preprod`
 Full pre-production readiness gate:
@@ -78,19 +71,21 @@ Full pre-production readiness gate:
 
 Outputs a pass/fail report. Any OWASP failure = NOT READY.
 
-## Hooks
+## Status Bar
 
-### `precompact-save`
-**Event:** PreCompact — Fires before Claude Code auto-compacts the context window. Injects a warning telling Claude to run `/compact` first.
+Shows git branch status and a rotating Star Wars quote:
 
-### `context-guard`
-**Event:** Stop — When Claude tries to stop and context usage is >= 80%, blocks and prompts to run `/compact` before continuing.
+```
+main:clean | Do. Or do not. There is no try.
+main:3M    | Stay on target.
+```
 
-Together, these two hooks ensure you never lose session context silently.
+- **Green** `main:clean` — no uncommitted changes
+- **Yellow** `main:3M` — 3 modified files
 
 ## Update
 
-Re-run the installer to update RULES.md, skills, and hooks. Your CLAUDE.md and CHANGELOG.md won't be touched.
+Re-run the installer to update RULES.md, skills, and status bar. Your CLAUDE.md and CHANGELOG.md won't be touched.
 
 ```bash
 curl -sL https://raw.githubusercontent.com/vji11/claude-framework/main/install.sh | bash
@@ -99,12 +94,8 @@ curl -sL https://raw.githubusercontent.com/vji11/claude-framework/main/install.s
 ## Uninstall
 
 ```bash
-# Remove skills
-rm -f ~/.claude/commands/{handover,resume,compact,review,debug,preprod}.md
-
-# Remove hooks
-rm -f ~/.claude/hooks/{context-guard,precompact-save}.sh
-
-# Remove hook registrations from settings.json (manually edit)
+rm -f ~/.claude/commands/{handover,resume,review,debug,preprod}.md
+rm -f ~/.claude/hooks/status.sh
+# Remove statusLine from ~/.claude/settings.json manually
 # Project files (RULES.md, CLAUDE.md, etc.) can stay or be deleted per project
 ```

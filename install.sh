@@ -66,41 +66,29 @@ echo "  scripts/ created"
 COMMANDS_DIR="$HOME/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
 
-for skill in handover resume preprod compact review debug; do
+for skill in handover resume preprod review debug; do
     copy_file "skills/$skill.md" "$COMMANDS_DIR/$skill.md"
     echo "  /$skill skill installed"
 done
 
-# --- Hooks ---
+# --- Status bar ---
 HOOKS_DIR="$HOME/.claude/hooks"
 mkdir -p "$HOOKS_DIR"
 
-copy_file "hooks/context-guard.sh" "$HOOKS_DIR/context-guard.sh"
-chmod +x "$HOOKS_DIR/context-guard.sh"
-echo "  context-guard hook installed"
-
-copy_file "hooks/precompact-save.sh" "$HOOKS_DIR/precompact-save.sh"
-chmod +x "$HOOKS_DIR/precompact-save.sh"
-echo "  precompact-save hook installed"
-
-# --- Status bar ---
 copy_file "statusbar/status.sh" "$HOOKS_DIR/status.sh"
 chmod +x "$HOOKS_DIR/status.sh"
 echo "  status bar installed"
 
-# --- Register hooks + status bar in settings.json ---
+# --- Register status bar in settings.json ---
 SETTINGS_FILE="$HOME/.claude/settings.json"
 
-# Create settings.json if it doesn't exist
 if [ ! -f "$SETTINGS_FILE" ]; then
     echo '{}' > "$SETTINGS_FILE"
 fi
 
-# Check if hooks are already registered
-if grep -q "context-guard" "$SETTINGS_FILE" 2>/dev/null; then
-    echo "  hooks already registered in settings.json — skipped"
+if grep -q "status.sh" "$SETTINGS_FILE" 2>/dev/null; then
+    echo "  status bar already registered in settings.json — skipped"
 else
-    # Build settings with hooks
     python3 -c "
 import json, os
 
@@ -112,23 +100,6 @@ try:
 except:
     settings = {}
 
-hooks = settings.get('hooks', {})
-
-hooks['PreCompact'] = hooks.get('PreCompact', []) + [{
-    'hooks': [{
-        'type': 'command',
-        'command': 'bash \$HOME/.claude/hooks/precompact-save.sh'
-    }]
-}]
-
-hooks['Stop'] = hooks.get('Stop', []) + [{
-    'hooks': [{
-        'type': 'command',
-        'command': 'bash \$HOME/.claude/hooks/context-guard.sh'
-    }]
-}]
-
-settings['hooks'] = hooks
 settings['statusLine'] = {
     'type': 'command',
     'command': 'bash \$HOME/.claude/hooks/status.sh'
@@ -136,7 +107,7 @@ settings['statusLine'] = {
 
 with open(settings_file, 'w') as f:
     json.dump(settings, f, indent=2)
-" 2>/dev/null && echo "  hooks registered in settings.json" || echo "  WARN: could not register hooks — add manually (see README)"
+" 2>/dev/null && echo "  status bar registered in settings.json" || echo "  WARN: could not register status bar — add manually (see README)"
 fi
 
 echo ""
@@ -146,16 +117,10 @@ echo "Skills installed (~/.claude/commands/):"
 echo "  /handover  — Session handover with checkpoint, versioning, db export"
 echo "  /resume    — Resume from latest checkpoint"
 echo "  /preprod   — Pre-production readiness (SDLC + OWASP Top 10)"
-echo "  /compact   — Emergency context save before auto-compact"
 echo "  /review    — Structured code review (correctness, security, quality)"
-echo "  /debug     — Structured debugging workflow"
+echo "  /debug     — Structured debugging workflow (5 Whys)"
 echo ""
-echo "Hooks installed (~/.claude/hooks/):"
-echo "  precompact-save  — Warns before auto-compact wipes context"
-echo "  context-guard    — Blocks stop when context >= 80%, prompts /compact"
-echo ""
-echo "Status bar:"
-echo "  Shows: project name | context % | hook health | Star Wars quote"
+echo "Status bar: git branch/status | Star Wars quote"
 echo ""
 echo "Project files:"
 echo "  RULES.md      — Development rules (updated)"
