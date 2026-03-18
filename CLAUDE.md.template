@@ -1,0 +1,20 @@
+# Project Context — [PROJECT NAME]
+
+**MANDATORY: Read [RULES.md](RULES.md) at the start of every session.**
+
+## Reference Docs
+- **[docs/](docs/)** — Project documentation
+
+## File Layout
+| Path | Contents |
+|------|----------|
+| `docs/` | Reference docs + checkpoints |
+| `scripts/` | Utility scripts |
+
+## Quick Reminders
+- Each Bash call = new shell. Chain with `&&` or `;`
+
+## Session End
+Run `/handover` before ending any session.
+
+*Updated: [DATE]*
