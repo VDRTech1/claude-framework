@@ -5,27 +5,13 @@
 # --- Project name ---
 PROJECT=$(basename "$(pwd)")
 
-# --- Context percentage ---
-# Read from Claude's context tracking file if available
-CTX_FILE="/tmp/claude-context-pct-*.txt"
-CTX_PCT=""
-for f in $CTX_FILE; do
-    if [ -f "$f" ]; then
-        CTX_PCT=$(cat "$f" 2>/dev/null)
-        break
-    fi
-done
-
-if [ -n "$CTX_PCT" ]; then
-    if [ "$CTX_PCT" -ge 80 ] 2>/dev/null; then
-        CTX_DISPLAY="CTX:${CTX_PCT}%!"
-    elif [ "$CTX_PCT" -ge 60 ] 2>/dev/null; then
-        CTX_DISPLAY="CTX:${CTX_PCT}%"
-    else
-        CTX_DISPLAY="CTX:${CTX_PCT}%"
-    fi
+# --- Git status ---
+BRANCH=$(git branch --show-current 2>/dev/null || echo "??")
+DIRTY=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+if [ "$DIRTY" -gt 0 ] 2>/dev/null; then
+    GIT_DISPLAY="${BRANCH}:${DIRTY}M"
 else
-    CTX_DISPLAY="CTX:--"
+    GIT_DISPLAY="${BRANCH}:clean"
 fi
 
 # --- Hook health ---
@@ -85,4 +71,4 @@ IDX=$(( (MINUTE / 3) % ${#QUOTES[@]} ))
 QUOTE="${QUOTES[$IDX]}"
 
 # --- Output ---
-echo "${PROJECT} | ${CTX_DISPLAY} | ${HOOK_DISPLAY} | ${QUOTE}"
+echo "${PROJECT} | ${GIT_DISPLAY} | ${HOOK_DISPLAY} | ${QUOTE}"
