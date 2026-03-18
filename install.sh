@@ -66,22 +66,84 @@ echo "  scripts/ created"
 COMMANDS_DIR="$HOME/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
 
-copy_file "skills/handover.md" "$COMMANDS_DIR/handover.md"
-echo "  /handover skill installed"
+for skill in handover resume preprod compact review debug; do
+    copy_file "skills/$skill.md" "$COMMANDS_DIR/$skill.md"
+    echo "  /$skill skill installed"
+done
 
-copy_file "skills/resume.md" "$COMMANDS_DIR/resume.md"
-echo "  /resume skill installed"
+# --- Hooks ---
+HOOKS_DIR="$HOME/.claude/hooks"
+mkdir -p "$HOOKS_DIR"
 
-copy_file "skills/preprod.md" "$COMMANDS_DIR/preprod.md"
-echo "  /preprod skill installed"
+copy_file "hooks/context-guard.sh" "$HOOKS_DIR/context-guard.sh"
+chmod +x "$HOOKS_DIR/context-guard.sh"
+echo "  context-guard hook installed"
+
+copy_file "hooks/precompact-save.sh" "$HOOKS_DIR/precompact-save.sh"
+chmod +x "$HOOKS_DIR/precompact-save.sh"
+echo "  precompact-save hook installed"
+
+# --- Register hooks in settings.json ---
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+# Create settings.json if it doesn't exist
+if [ ! -f "$SETTINGS_FILE" ]; then
+    echo '{}' > "$SETTINGS_FILE"
+fi
+
+# Check if hooks are already registered
+if grep -q "context-guard" "$SETTINGS_FILE" 2>/dev/null; then
+    echo "  hooks already registered in settings.json — skipped"
+else
+    # Build settings with hooks
+    python3 -c "
+import json, os
+
+settings_file = os.path.expanduser('$SETTINGS_FILE')
+
+try:
+    with open(settings_file) as f:
+        settings = json.load(f)
+except:
+    settings = {}
+
+hooks = settings.get('hooks', {})
+
+hooks['PreCompact'] = hooks.get('PreCompact', []) + [{
+    'hooks': [{
+        'type': 'command',
+        'command': 'bash \$HOME/.claude/hooks/precompact-save.sh'
+    }]
+}]
+
+hooks['Stop'] = hooks.get('Stop', []) + [{
+    'hooks': [{
+        'type': 'command',
+        'command': 'bash \$HOME/.claude/hooks/context-guard.sh'
+    }]
+}]
+
+settings['hooks'] = hooks
+
+with open(settings_file, 'w') as f:
+    json.dump(settings, f, indent=2)
+" 2>/dev/null && echo "  hooks registered in settings.json" || echo "  WARN: could not register hooks — add manually (see README)"
+fi
 
 echo ""
 echo "=== Done ==="
 echo ""
-echo "Skills installed globally (~/.claude/commands/):"
+echo "Skills installed (~/.claude/commands/):"
 echo "  /handover  — Session handover with checkpoint, versioning, db export"
 echo "  /resume    — Resume from latest checkpoint"
 echo "  /preprod   — Pre-production readiness (SDLC + OWASP Top 10)"
+echo "  /compact   — Emergency context save before auto-compact"
+echo "  /review    — Structured code review (correctness, security, quality)"
+echo "  /debug     — Structured debugging workflow"
+echo ""
+echo "Hooks installed (~/.claude/hooks/):"
+echo "  precompact-save  — Warns before auto-compact wipes context"
+echo "  context-guard    — Blocks stop when context >= 80%, prompts /compact"
 echo ""
 echo "Project files:"
 echo "  RULES.md      — Development rules (updated)"
