@@ -1,0 +1,5 @@
+# These are created by the installer in target projects, not tracked in the framework repo
+CLAUDE.md
+CHANGELOG.md
+docs/checkpoints/
+scripts/
