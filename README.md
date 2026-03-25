@@ -95,14 +95,21 @@ Outputs a pass/fail report. Any OWASP failure = NOT READY.
 
 ## Status Bar
 
-Shows git branch status and a rotating quote (Star Wars, South Park, Ashy):
+Shows context utilization, git branch status, and a rotating quote (Star Wars, South Park, Ashy):
 
 ```
-main:clean | Do. Or do not. There is no try.
-main:3M    | Stay on target.
+CTX:16% | main:ok | Do. Or do not. There is no try.
+CTX:55% | main:3M | Respect my authoritah!
 ```
 
-- **Green** `main:clean` — no uncommitted changes
+Context thresholds:
+- **Green** `CTX:16%` — plenty of room
+- **Yellow** `CTX:55%` — over half used
+- **Red** `CTX:72%` + warning — consider `/handover` soon
+- **DANGER** `CTX:85%+` — full-screen red alert, all work stops, `/handover` mandatory
+
+Git status:
+- **Green** `main:ok` — no uncommitted changes
 - **Yellow** `main:3M` — 3 modified files
 
 ## Update
