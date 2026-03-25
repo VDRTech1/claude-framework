@@ -65,7 +65,7 @@ Write-Host "  scripts\ created"
 $CommandsDir = Join-Path $env:USERPROFILE ".claude\commands"
 New-Item -ItemType Directory -Path $CommandsDir -Force | Out-Null
 
-foreach ($skill in @("handover", "resume", "preprod", "review", "debug", "codex")) {
+foreach ($skill in @("handover", "resume", "preprod", "review", "debug", "codex", "ashy-init")) {
     Copy-FrameworkFile "skills/$skill.md" (Join-Path $CommandsDir "$skill.md")
     Write-Host "  /$skill skill installed"
 }
@@ -111,8 +111,9 @@ Write-Host "  /preprod   - Pre-production readiness (SDLC + OWASP Top 10)"
 Write-Host "  /review    - Structured code review (correctness, security, quality)"
 Write-Host "  /debug     - Structured debugging workflow (5 Whys)"
 Write-Host "  /codex     - Joint review with OpenAI Codex CLI (two-model analysis)"
+Write-Host "  /ashy-init - Interactive project setup wizard (run first after install)"
 Write-Host ""
-Write-Host "Status bar: git branch/status | Star Wars quote"
+Write-Host "Status bar: git branch/status | rotating quote"
 Write-Host ""
 Write-Host "Project files:"
 Write-Host "  RULES.md      - Development rules (updated)"
