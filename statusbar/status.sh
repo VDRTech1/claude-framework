@@ -1,6 +1,7 @@
 #!/bin/bash
 # Claude Framework Status Bar
-# Shows: context usage | git branch/status | rotating quote (Star Wars / South Park / Ashy)
+# Shows: context usage (from stdin JSON) | git branch/status | rotating quote
+# Claude Code sends session JSON via stdin with context_window.used_percentage
 
 # --- Colors ---
 GREEN="\033[32m"
@@ -13,40 +14,53 @@ BG_RED="\033[41m"
 WHITE="\033[97m"
 RESET="\033[0m"
 
-# --- Context utilization ---
-# Find the most recently modified .jsonl conversation file for the current project
-PROJECT_PATH=$(pwd | sed "s|/|-|g; s|^-||")
-CONV_DIR="$HOME/.claude/projects/-${PROJECT_PATH}"
+# --- Read stdin JSON from Claude Code ---
+INPUT=$(cat)
 
-if [ -d "$CONV_DIR" ]; then
-    CONV_FILE=$(ls -t "$CONV_DIR"/*.jsonl 2>/dev/null | head -1)
+# --- Context utilization (real data from Claude Code) ---
+if command -v jq >/dev/null 2>&1 && [ -n "$INPUT" ]; then
+    PCT=$(echo "$INPUT" | jq -r '.context_window.used_percentage // empty' 2>/dev/null | cut -d. -f1)
 fi
 
-# Fallback: find the most recently modified .jsonl anywhere in ~/.claude/projects
-if [ -z "$CONV_FILE" ]; then
-    CONV_FILE=$(find "$HOME/.claude/projects" -name "*.jsonl" -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
-fi
-
-if [ -n "$CONV_FILE" ] && [ -f "$CONV_FILE" ]; then
-    FILE_BYTES=$(wc -c < "$CONV_FILE" | tr -d ' ')
-    # Calibrated from real /context data: 518KB JSONL = 60k/1000k tokens (6%)
-    # So 1M tokens ≈ 8.6MB of JSONL file data
-    MAX_BYTES=8600000
-    PCT=$(( FILE_BYTES * 100 / MAX_BYTES ))
-    [ "$PCT" -gt 100 ] && PCT=100
-
+if [ -n "$PCT" ] && [ "$PCT" -ge 0 ] 2>/dev/null; then
     if [ "$PCT" -ge 85 ]; then
-        # DANGER ZONE
-        CTX_DISPLAY="${BG_RED}${WHITE}${BOLD}${BLINK} !!!  DANGER DANGER - LOSING MEMORY  !!! ${RESET} ${RED}${BOLD}CTX:${PCT}%${RESET} ${BG_RED}${WHITE}${BOLD} STOP ALL WORK -> /handover NOW ${RESET}"
+        CTX_DISPLAY="${BG_RED}${WHITE}${BOLD}${BLINK} !!! DANGER DANGER - LOSING MEMORY !!! ${RESET} ${RED}${BOLD}CTX:${PCT}%${RESET} ${BG_RED}${WHITE}${BOLD} STOP ALL WORK -> /handover NOW ${RESET}"
     elif [ "$PCT" -ge 70 ]; then
-        CTX_DISPLAY="${RED}${BOLD}CTX:${PCT}%${RESET} ${RED}WARNING: context high - consider /handover soon${RESET}"
+        CTX_DISPLAY="${RED}${BOLD}CTX:${PCT}%${RESET} ${RED}WARNING: context high — /handover soon${RESET}"
     elif [ "$PCT" -ge 50 ]; then
         CTX_DISPLAY="${YELLOW}CTX:${PCT}%${RESET}"
     else
         CTX_DISPLAY="${GREEN}CTX:${PCT}%${RESET}"
     fi
 else
-    CTX_DISPLAY="${DIM}CTX:??${RESET}"
+    # Fallback: estimate from JSONL file size if no stdin JSON
+    PROJECT_PATH=$(pwd | sed "s|/|-|g; s|^-||")
+    CONV_DIR="$HOME/.claude/projects/-${PROJECT_PATH}"
+    if [ -d "$CONV_DIR" ]; then
+        CONV_FILE=$(ls -t "$CONV_DIR"/*.jsonl 2>/dev/null | head -1)
+    fi
+    if [ -z "$CONV_FILE" ]; then
+        CONV_FILE=$(find "$HOME/.claude/projects" -name "*.jsonl" -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
+    fi
+    if [ -n "$CONV_FILE" ] && [ -f "$CONV_FILE" ]; then
+        FILE_BYTES=$(wc -c < "$CONV_FILE" | tr -d ' ')
+        # Fallback estimate: ~13 bytes per token, 12k system overhead, 1M max
+        MSG_TOKENS=$(( FILE_BYTES / 13 ))
+        TOTAL_TOKENS=$(( MSG_TOKENS + 12000 ))
+        PCT=$(( TOTAL_TOKENS * 100 / 1000000 ))
+        [ "$PCT" -gt 100 ] && PCT=100
+        if [ "$PCT" -ge 85 ]; then
+            CTX_DISPLAY="${BG_RED}${WHITE}${BOLD}${BLINK} !!! DANGER DANGER - LOSING MEMORY !!! ${RESET} ${RED}${BOLD}~CTX:${PCT}%${RESET} ${BG_RED}${WHITE}${BOLD} STOP ALL WORK -> /handover NOW ${RESET}"
+        elif [ "$PCT" -ge 70 ]; then
+            CTX_DISPLAY="${RED}${BOLD}~CTX:${PCT}%${RESET} ${RED}WARNING: context high — /handover soon${RESET}"
+        elif [ "$PCT" -ge 50 ]; then
+            CTX_DISPLAY="${YELLOW}~CTX:${PCT}%${RESET}"
+        else
+            CTX_DISPLAY="${GREEN}~CTX:${PCT}%${RESET}"
+        fi
+    else
+        CTX_DISPLAY="${DIM}CTX:??${RESET}"
+    fi
 fi
 
 # --- Git status helper ---
@@ -119,8 +133,7 @@ IDX=$(( (MINUTE / 3) % ${#QUOTES[@]} ))
 QUOTE="${DIM}${QUOTES[$IDX]}${RESET}"
 
 # --- Output ---
-if [ "$PCT" -ge 85 ] 2>/dev/null; then
-    # Critical: show danger prominently, quote replaced with urgency
+if [ -n "$PCT" ] && [ "$PCT" -ge 85 ] 2>/dev/null; then
     echo -e "${CTX_DISPLAY}"
     echo -e "${RED}${BOLD}  >>>  DO NOT CONTINUE  <<<  Run /handover immediately to save your work  <<<${RESET}"
 else
