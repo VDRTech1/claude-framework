@@ -3,9 +3,9 @@ set -e
 
 # Claude Framework Installer
 # Usage: curl -s https://raw.githubusercontent.com/vji11/claude-framework/main/install.sh | bash
-# Or:    git clone https://github.com/vji11/claude-framework.git && cd claude-framework && bash install.sh
+# Or:    git clone https://github.com/VDRTech1/claude-framework.git && cd claude-framework && bash install.sh
 
-REPO_URL="https://raw.githubusercontent.com/vji11/claude-framework/main"
+REPO_URL="https://raw.githubusercontent.com/VDRTech1/claude-framework/main"
 PROJECT_DIR="${1:-.}"
 
 echo "=== Claude Framework Installer ==="
@@ -66,7 +66,7 @@ echo "  scripts/ created"
 COMMANDS_DIR="$HOME/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
 
-for skill in handover resume preprod review debug; do
+for skill in handover resume preprod review debug codex; do
     copy_file "skills/$skill.md" "$COMMANDS_DIR/$skill.md"
     echo "  /$skill skill installed"
 done
@@ -119,6 +119,7 @@ echo "  /resume    — Resume from latest checkpoint"
 echo "  /preprod   — Pre-production readiness (SDLC + OWASP Top 10)"
 echo "  /review    — Structured code review (correctness, security, quality)"
 echo "  /debug     — Structured debugging workflow (5 Whys)"
+echo "  /codex     — Joint review with OpenAI Codex CLI (two-model analysis)"
 echo ""
 echo "Status bar: git branch/status | Star Wars quote"
 echo ""
