@@ -29,9 +29,9 @@ fi
 
 if [ -n "$CONV_FILE" ] && [ -f "$CONV_FILE" ]; then
     FILE_BYTES=$(wc -c < "$CONV_FILE" | tr -d ' ')
-    # 1M tokens ~ 4MB text, but usable context ~800K tokens after system prompts/tools
-    # Effective capacity ~3.2MB of conversation text
-    MAX_BYTES=3200000
+    # Calibrated from real /context data: 518KB JSONL = 60k/1000k tokens (6%)
+    # So 1M tokens ≈ 8.6MB of JSONL file data
+    MAX_BYTES=8600000
     PCT=$(( FILE_BYTES * 100 / MAX_BYTES ))
     [ "$PCT" -gt 100 ] && PCT=100
 
