@@ -66,7 +66,7 @@ echo "  scripts/ created"
 COMMANDS_DIR="$HOME/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
 
-for skill in handover resume preprod review debug codex ashy-init; do
+for skill in handover resume preprod review debug codex ashy-init inov; do
     copy_file "skills/$skill.md" "$COMMANDS_DIR/$skill.md"
     echo "  /$skill skill installed"
 done
@@ -121,6 +121,7 @@ echo "  /review    — Structured code review (correctness, security, quality)"
 echo "  /debug     — Structured debugging workflow (5 Whys)"
 echo "  /codex     — Joint review with OpenAI Codex CLI (two-model analysis)"
 echo "  /ashy-init — Interactive project setup wizard (run first after install)"
+echo "  /inov      — Radical innovation proposals"
 echo ""
 echo "Status bar: git branch/status | rotating quote"
 echo ""
