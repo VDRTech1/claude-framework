@@ -8,50 +8,38 @@ A lean setup for Claude Code projects. Session continuity, development rules, co
 |------|---------|
 | `RULES.md` | Mandatory development & session guidelines |
 | `CLAUDE.md.template` | Project context template (customise per project) |
+| `INSTALL.md` | Installation instructions for Claude Code |
 | `skills/handover.md` | `/handover` — Session handover with checkpoint, versioning, db export |
-| `skills/resume.md` | `/resume` — Resume from latest checkpoint |
+| `skills/QQQ.md` | `/QQQ` — Resume from latest checkpoint |
 | `skills/review.md` | `/review` — Structured code review |
 | `skills/debug.md` | `/debug` — Structured debugging workflow (5 Whys) |
 | `skills/preprod.md` | `/preprod` — Pre-production readiness (SDLC + OWASP Top 10) |
 | `skills/codex.md` | `/codex` — Joint review with OpenAI Codex CLI (two-model analysis) |
 | `skills/ashy-init.md` | `/ashy-init` — Interactive project setup wizard (run first) |
 | `skills/inov.md` | `/inov` — Radical innovation proposals |
-| `statusbar/status.sh` | Status bar — git branch/status + Star Wars quote |
-| `install.sh` | One-command installer |
+| `statusbar/status.sh` | Status bar — git branch/status + rotating quote |
 
 ## Install
 
-### macOS / Linux
+1. Clone the framework:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/VDRTech1/claude-framework/main/install.sh | bash
+git clone https://github.com/VDRTech1/claude-framework.git /opt/claude-framework
 ```
 
-Or clone and install into a specific project:
+2. Tell Claude Code to install it into your project:
 
-```bash
-git clone https://github.com/VDRTech1/claude-framework.git /tmp/claude-framework
-bash /tmp/claude-framework/install.sh /path/to/your/project
-rm -rf /tmp/claude-framework
+```
+Install the Claude Framework from /opt/claude-framework into this project
 ```
 
-### Windows (PowerShell)
+Or run `/ashy-init` which handles installation + project setup interactively.
 
-```powershell
-irm https://raw.githubusercontent.com/VDRTech1/claude-framework/main/install.ps1 | iex
-```
-
-Or clone and install into a specific project:
-
-```powershell
-git clone https://github.com/VDRTech1/claude-framework.git $env:TEMP\claude-framework
-& $env:TEMP\claude-framework\install.ps1 C:\path\to\your\project
-Remove-Item $env:TEMP\claude-framework -Recurse -Force
-```
+Claude Code reads `INSTALL.md` and performs all installation steps automatically — no scripts needed.
 
 ## What It Does
 
-The installer:
+The installation:
 
 1. **Copies `RULES.md`** into your project root (always updated on re-install)
 2. **Creates `CLAUDE.md`** from template if it doesn't exist (won't overwrite)
@@ -65,7 +53,7 @@ The installer:
 ### `/handover`
 Run before ending any session. Bumps app version, exports database, updates CLAUDE.md + CHANGELOG.md, creates checkpoint in `docs/checkpoints/`, commits and pushes.
 
-### `/resume`
+### `/QQQ`
 Start a new session. Reads the latest checkpoint and summarises where you left off.
 
 ### `/review`
@@ -118,22 +106,12 @@ Git status:
 
 ## Update
 
-Re-run the installer to update RULES.md, skills, and status bar. Your CLAUDE.md and CHANGELOG.md won't be touched.
-
-**macOS / Linux:**
-```bash
-curl -sL https://raw.githubusercontent.com/VDRTech1/claude-framework/main/install.sh | bash
-```
-
-**Windows:**
-```powershell
-irm https://raw.githubusercontent.com/VDRTech1/claude-framework/main/install.ps1 | iex
-```
+Re-run the installation (tell Claude Code to install again). `RULES.md`, skills, and status bar will be updated. Your `CLAUDE.md` and `CHANGELOG.md` won't be touched.
 
 ## Uninstall
 
 ```bash
-rm -f ~/.claude/commands/{handover,resume,review,debug,preprod,codex,ashy-init,inov}.md
+rm -f ~/.claude/commands/{handover,QQQ,review,debug,preprod,codex,ashy-init,inov}.md
 rm -f ~/.claude/hooks/status.sh
 # Remove statusLine from ~/.claude/settings.json manually
 # Project files (RULES.md, CLAUDE.md, etc.) can stay or be deleted per project

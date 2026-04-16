@@ -134,7 +134,7 @@ Project:     [name]
 Type:        [type]
 Tech Stack:  [stack]
 Git:         [initialized / existing] — [local only / remote: URL]
-Skills:      /handover /resume /review /debug /preprod /codex /inov /ashy-init
+Skills:      /handover /QQQ /review /debug /preprod /codex /inov /ashy-init
 
 Files created/updated:
   CLAUDE.md     — configured for your project
@@ -148,7 +148,7 @@ Next steps:
   1. Review CLAUDE.md and adjust as needed
   2. Start building — Claude will follow your project context
   3. Run /handover before ending each session
-  4. Run /resume to pick up where you left off
+  4. Run /QQQ to pick up where you left off
 ```
 
 ---
